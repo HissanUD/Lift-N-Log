@@ -1,0 +1,3 @@
+exercises = []
+workouts = []
+setlist = []
