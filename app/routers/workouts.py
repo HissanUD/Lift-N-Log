@@ -1,99 +1,118 @@
-from fastapi import HTTPException, APIRouter
-from app.schemas import WorkoutCreate,WorkoutSetCreate
-from app.database import exercises as exercise_list, workouts as workout_list, setlist
-from app.utils import get_id
+from fastapi import HTTPException, APIRouter, Depends
+from app.schemas import WorkoutCreate,WorkoutSetCreate, WorkoutRead, WorkoutSetRead, WorkoutDetailedRead, WorkoutSetDetailedRead
+from sqlalchemy.orm import Session
+from app import models
+from app.database import get_db
 
-router = APIRouter(prefix="/workouts")
+router = APIRouter(prefix="/workouts",tags=["workouts"])
 
-@router.get("/")
-async def all_workouts():
-    return workout_list
+@router.get("/", response_model=list[WorkoutRead])
+async def all_workouts(db: Session=Depends(get_db)):
+    return db.query(models.Workout).all()
 
-@router.get("/{workout_id}")
-async def get_workout(workout_id:int):
-    for workout in workout_list:
-        if workout["id"] == workout_id:
-            return workout
-    raise HTTPException(status_code=404,detail="Workout does not exist")
-
-@router.post("/")
-async def add_workout(workout:WorkoutCreate):
-    new_workout={
-        "id": get_id(workout_list),
-        "name": workout.name,
-        "date": workout.date
-    }
-    workout_list.append(new_workout)
+@router.get("/{workout_id}",response_model=WorkoutDetailedRead)
+async def get_workout(workout_id:int,db: Session=Depends(get_db)):
+    result = db.query(models.Workout).filter(models.Workout.id == workout_id).first()
+    if result is None:
+        raise HTTPException(status_code=404,detail="Workout does not exist")
+    return result
     
+@router.post("/",status_code=201,response_model=WorkoutRead)
+async def add_workout(workout:WorkoutCreate,db:Session=Depends(get_db)):
+    new_workout= models.Workout(
+        name = workout.name,
+        date = workout.date
+    )
+    db.add(new_workout)
+    db.commit()
+    db.refresh(new_workout)
     return new_workout
-
-@router.post("/{workout_id}/sets")
-async def add_set(workout_id:int,work_set:WorkoutSetCreate):
-    workout_exists = False
-    for workout in workout_list:
-        if workout["id"] == workout_id:
-            workout_exists = True
-    if workout_exists == False:
-        raise HTTPException(status_code=404, detail="Workout does not exist")
-    exercise_exists = False
-
-    for exercise in exercise_list:
-        if exercise["id"] == work_set.exercise_id:
-            exercise_exists = True
-
-    if exercise_exists == False:
-        raise HTTPException(status_code=404, detail="Exercise does not exist")
     
+
+@router.post("/{workout_id}/sets",status_code=201, response_model=WorkoutSetRead)
+async def add_set(workout_id:int,work_set:WorkoutSetCreate,db:Session=Depends(get_db)):
+    target_workout = db.query(models.Workout).filter(models.Workout.id == workout_id).first()
+    target_exercise = db.query(models.Exercise).filter(models.Exercise.id == work_set.exercise_id).first()
+    if target_workout is None:
+        raise HTTPException(status_code=404, detail= "The selected workout does not exist")
+    if target_exercise is None:
+        raise HTTPException(status_code=404, detail= "The selected exercise does not exist")
     
-    new_set = {
-        "id" : get_id(setlist),
-        "workout_id" : workout_id,
-        "exercise_id": work_set.exercise_id,
-        "reps": work_set.reps,
-        "weight": work_set.weight
-    }
-    setlist.append(new_set)
+    new_set = models.WorkoutSet(
+        workout_id = workout_id,
+        exercise_id = work_set.exercise_id,
+        reps = work_set.reps,
+        weight = work_set.weight
+    )
+    db.add(new_set)
+    db.commit()
+    db.refresh(new_set)
     return new_set
 
+    
 @router.get("/{workout_id}/volume")
-async def get_volume(workout_id:int):
-    workout_exists = False
-    total = 0
-    for workout in workout_list:
-        if workout["id"] == workout_id:
-            workout_exists = True
-    if workout_exists == False:
+async def get_volume(workout_id:int, db:Session=Depends(get_db)):
+    target_workout = db.query(models.Workout).filter(models.Workout.id == workout_id).first()
+    if target_workout is None:
         raise HTTPException(status_code=404,detail="Workout does not exist")
-    for set_workout in setlist:
-        if set_workout["workout_id"] == workout_id:
-            total += set_workout["reps"]*set_workout["weight"]
-    return{
-        "workout_id":workout_id,
-        "total_volume": total
-    }
+    workout_sets = db.query(models.WorkoutSet).filter(models.WorkoutSet.workout_id == workout_id).all()
+    volume = 0.0
+    for workout_set in workout_sets:
+        volume += workout_set.reps * workout_set.weight
+    return volume
+        
 
 
-@router.put("/{workout_id}")
-async def update_workout(workout_id:int,workout_shape:WorkoutCreate):
-    for workout in workout_list:
-        if workout["id"] == workout_id:
-            workout["name"] = workout_shape.name
-            workout["date"] = workout_shape.date
-            return workout
-    raise HTTPException(status_code=404,detail="Workout does not exist")
+@router.put("/{workout_id}",response_model=WorkoutRead)
+async def update_workout(workout_id:int,workout_shape:WorkoutCreate,db:Session=Depends(get_db)):
+    target_workout = db.query(models.Workout).filter(models.Workout.id == workout_id).first()
+    if target_workout is None:
+        raise HTTPException(status_code=404,detail="Workout does not exist")
+    target_workout.name = workout_shape.name
+    target_workout.date = workout_shape.date
+    db.commit()
+    db.refresh(target_workout)
+    return target_workout
 
-@router.delete("/{workout_id}")
-async def delete_workout(workout_id:int):
-    for workout in workout_list:
-        if workout["id"] == workout_id:
-            workout_list.remove(workout)
-            return workout
-    raise HTTPException(status_code=404,detail="Workout does not exist")
+@router.delete("/{workout_id}",status_code=204)
+async def delete_workout(workout_id:int,db:Session=Depends(get_db)):
+    target_workout = db.query(models.Workout).filter(models.Workout.id == workout_id).first()
+    if target_workout is None:
+        raise HTTPException(status_code=404,detail="Workout does not exist")
+    setlist = db.query(models.WorkoutSet).filter(models.WorkoutSet.workout_id == workout_id).all()
+    for workout_set in setlist:
+      db.delete(workout_set)
+    db.delete(target_workout)
+    db.commit()
 
-@router.delete("/{workout_id}/sets/{set_id}")
-async def delete_set(workout_id:int,set_id:int):
-    for setpri in setlist:
-        if setpri["id"] == set_id and setpri["workout_id"] == workout_id:
-            setlist.remove(setpri)
-            return setpri
-    raise HTTPException(status_code=404,detail="Set does not exist")
+@router.delete("/{workout_id}/sets/{set_id}",status_code=204)
+async def delete_set(workout_id:int,set_id:int,db:Session=Depends(get_db)):
+    target_workout = db.query(models.Workout).filter(models.Workout.id == workout_id).first()
+    target_set = db.query(models.WorkoutSet).filter(models.WorkoutSet.workout_id == workout_id, models.WorkoutSet.id == set_id).first()
+    if target_workout is None:
+        raise HTTPException(status_code=404, detail= "The selected workout does not exist")
+    if target_set is None:
+        raise HTTPException(status_code=404, detail= "The selected set does not exist")
+    db.delete(target_set)
+    db.commit()
+    
+
+@router.get("/{workout_id}/sets",response_model=list[WorkoutSetRead])
+async def get_all_sets(workout_id: int, db:Session=Depends(get_db)):
+    target_workout = db.query(models.Workout).filter(models.Workout.id == workout_id).first()
+    if target_workout is None:
+        raise HTTPException(status_code=404,detail="Workout does not exist")
+    setlist = db.query(models.WorkoutSet).filter(models.WorkoutSet.workout_id == workout_id).all()
+    return setlist
+    
+
+@router.get("/{workout_id}/sets/{set_id}",response_model=WorkoutSetDetailedRead)
+async def get_set(workout_id: int, set_id: int, db:Session=Depends(get_db)):
+    target_workout = db.query(models.Workout).filter(models.Workout.id == workout_id).first()
+    if target_workout is None:
+        raise HTTPException(status_code=404,detail="Workout does not exist")
+    setlist = db.query(models.WorkoutSet).filter(models.WorkoutSet.workout_id == workout_id, models.WorkoutSet.id == set_id).first()
+    if setlist is None:
+        raise HTTPException(status_code=404,detail="Workout Set does not exist")
+    return setlist
+    
