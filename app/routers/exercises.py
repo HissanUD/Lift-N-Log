@@ -9,14 +9,14 @@ router = APIRouter(prefix="/exercises", tags=["exercises"])
 @router.get("/",response_model=list[ExerciseRead])
 async def all_exercises(muscle: str | None = None, db: Session=Depends(get_db)):
     if muscle is None:
-        return db.query(models.Exercise).all()
+        return db.query(models.Exercise).filter(models.Exercise.is_active == True).all()
     
-    return db.query(models.Exercise).filter(models.Exercise.muscle == muscle).all()
+    return db.query(models.Exercise).filter(models.Exercise.muscle == muscle, models.Exercise.is_active == True).all()
     
     
 @router.get("/{exercise_id}", response_model=ExerciseRead)
 async def get_exercise(exercise_id: int, db: Session=Depends(get_db)):
-    result = db.query(models.Exercise).filter(models.Exercise.id == exercise_id).first()
+    result = db.query(models.Exercise).filter(models.Exercise.id == exercise_id, models.Exercise.is_active == True).first()
     if result is None: 
         raise HTTPException(status_code=404, detail="Exercise not found")
     return result
@@ -25,7 +25,9 @@ async def get_exercise(exercise_id: int, db: Session=Depends(get_db)):
 async def add_exercise(exercise: ExerciseCreate, db: Session=Depends(get_db)):
     new_exercise = models.Exercise(
         name = exercise.name,
-        muscle = exercise.muscle
+        muscle = exercise.muscle,
+        is_default = False,
+        is_active = True
     )
     db.add(new_exercise)
     db.commit()
@@ -34,7 +36,7 @@ async def add_exercise(exercise: ExerciseCreate, db: Session=Depends(get_db)):
 
 @router.put("/{exercise_id}", response_model=ExerciseRead)
 async def update_exercise(exercise_id:int,exercise_shape:ExerciseCreate,db: Session=Depends(get_db)):
-    exercise_record = db.query(models.Exercise).filter(models.Exercise.id == exercise_id).first()
+    exercise_record = db.query(models.Exercise).filter(models.Exercise.id == exercise_id, models.Exercise.is_active == True).first()
     if exercise_record is None:
         raise HTTPException(status_code=404,detail="Exercise does not exist")
     exercise_record.muscle = exercise_shape.muscle
@@ -48,5 +50,7 @@ async def delete_exercise(exercise_id:int,db: Session=Depends(get_db)):
     exercise_record = db.query(models.Exercise).filter(models.Exercise.id == exercise_id).first()
     if exercise_record is None:
         raise HTTPException(status_code=404,detail="Exercise does not exist")
-    db.delete(exercise_record)
+    if exercise_record.is_default:
+        raise HTTPException(status_code=403,detail="Exercise is default")
+    exercise_record.is_active = False
     db.commit()
