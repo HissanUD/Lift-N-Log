@@ -83,3 +83,10 @@ class Token(BaseModel):
     access_token: str = Field(min_length=1)
     token_type: str = Field(min_length=1)
     
+class UserLogin(BaseModel):
+
+    email: EmailStr 
+    password: str = Field(min_length=8)
+    
+
+    

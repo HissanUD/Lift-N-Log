@@ -1,10 +1,11 @@
 from fastapi import FastAPI
-from app.routers import exercises, workouts
+from app.routers import exercises, workouts, auth
 from app.database import engine, Base
 from app import models
 
 app = FastAPI()
 
+app.include_router(auth.router)
 app.include_router(exercises.router)
 app.include_router(workouts.router)
 
