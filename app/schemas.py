@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from datetime import date
 
 
@@ -63,6 +63,23 @@ class WorkoutDetailedRead(BaseModel):
     date: date
     sets : list[WorkoutSetDetailedRead]
     
+class UserCreate(BaseModel):
     
+    user_name: str = Field(min_length=1)
+    email: EmailStr 
+    password: str = Field(min_length=8)
     
+class UserRead(BaseModel):
+    model_config= ConfigDict(from_attributes=True)
+    
+    id: int =Field(gt=0)
+    user_name: str = Field(min_length=1)
+    email: EmailStr
+    is_active: bool
+    auth_provider: str= Field(min_length=1)
+    
+class Token(BaseModel):
+
+    access_token: str = Field(min_length=1)
+    token_type: str = Field(min_length=1)
     

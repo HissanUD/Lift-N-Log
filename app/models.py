@@ -29,3 +29,15 @@ class WorkoutSet(Base):
     
     workout = sqorm.relationship("Workout", back_populates="sets")
     exercise = sqorm.relationship("Exercise",back_populates="sets")
+    
+class User(Base):
+    __tablename__ = "users"
+    id = sqa.Column(sqa.Integer,primary_key=True,index=True)
+    user_name = sqa.Column(sqa.String,nullable=False)
+    email = sqa.Column(sqa.String,nullable=False,unique=True,index=True)
+    hashed_password = sqa.Column(sqa.String,nullable=True)
+    created_at = sqa.Column(sqa.DateTime,nullable=False, server_default=sqa.func.now())
+    is_active = sqa.Column(sqa.Boolean,nullable=False, default=True, server_default=sqa.true())
+    auth_provider = sqa.Column(sqa.String,nullable=False, default="local", server_default="local")
+    provider_subject = sqa.Column(sqa.String,nullable=True)
+    
