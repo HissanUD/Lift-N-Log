@@ -2,8 +2,10 @@ from fastapi import HTTPException, APIRouter, Depends
 from sqlalchemy.orm import Session
 from app import models
 from app.database import get_db
-from app.schemas import UserCreate, UserRead, Token, UserLogin
+from app.schemas import UserCreate, UserRead, Token
 from app.security import hash_password,verify_password, create_access_token
+from app.dependencies import get_current_user
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -26,14 +28,14 @@ async def register_user(details:UserCreate,db:Session=Depends(get_db)):
     return user
 
 @router.post("/login",response_model=Token)
-async def login_user(details:UserLogin,db:Session=Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == details.email).first()
+async def login_user(form_data: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db),):
+    user = db.query(models.User).filter(models.User.email == form_data.username).first()
     if user is None:
         raise HTTPException(status_code=401, detail="Incorrect details")
     if user.hashed_password is None:
         raise HTTPException(status_code=401, detail="Incorrect details")
     
-    verification = verify_password(details.password,str(user.hashed_password))
+    verification = verify_password(form_data.password,str(user.hashed_password))
     
     if verification is False:
         raise HTTPException(status_code=401, detail="Incorrect details")
@@ -42,3 +44,6 @@ async def login_user(details:UserLogin,db:Session=Depends(get_db)):
     token = create_access_token(verified_user_id)
     return {"access_token": token, "token_type": "bearer"}
 
+@router.get("/me",response_model=UserRead)
+async def get_me(current_user:models.User=Depends(get_current_user)):
+    return current_user
