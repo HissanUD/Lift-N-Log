@@ -10,6 +10,8 @@ class Exercise(Base):
     is_default = sqa.Column(sqa.Boolean,nullable=False, default=False, server_default=sqa.false())
     is_active = sqa.Column(sqa.Boolean,nullable=False, default=True, server_default=sqa.true())
     sets = sqorm.relationship("WorkoutSet",back_populates="exercise")
+    user_id = sqa.Column(sqa.Integer,sqa.ForeignKey("users.id"),nullable=True)
+    user = sqorm.relationship("User",back_populates="exercises")
     
     
 class Workout(Base):
@@ -18,6 +20,8 @@ class Workout(Base):
     name = sqa.Column(sqa.String,nullable=False)
     date = sqa.Column(sqa.Date,nullable=False)
     sets = sqorm.relationship("WorkoutSet",back_populates="workout")
+    user_id = sqa.Column(sqa.Integer,sqa.ForeignKey("users.id"),nullable=False)
+    user = sqorm.relationship("User",back_populates="workouts")
     
 class WorkoutSet(Base):
     __tablename__ = "workout_sets"
@@ -26,7 +30,6 @@ class WorkoutSet(Base):
     exercise_id = sqa.Column(sqa.Integer,sqa.ForeignKey("exercises.id"),nullable=False)
     reps = sqa.Column(sqa.Integer,nullable=False)
     weight= sqa.Column(sqa.Float,nullable=False)
-    
     workout = sqorm.relationship("Workout", back_populates="sets")
     exercise = sqorm.relationship("Exercise",back_populates="sets")
     
@@ -40,4 +43,5 @@ class User(Base):
     is_active = sqa.Column(sqa.Boolean,nullable=False, default=True, server_default=sqa.true())
     auth_provider = sqa.Column(sqa.String,nullable=False, default="local", server_default="local")
     provider_subject = sqa.Column(sqa.String,nullable=True)
-    
+    workouts = sqorm.relationship("Workout",back_populates="user")
+    exercises = sqorm.relationship("Exercise",back_populates="user")

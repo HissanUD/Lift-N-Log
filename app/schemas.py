@@ -22,6 +22,7 @@ class WorkoutRead(BaseModel):
     id: int = Field(gt=0)
     name: str = Field(min_length=1)
     date: date
+    user_id: int = Field(gt=0)
 
 
 class ExerciseRead(BaseModel):
@@ -33,6 +34,7 @@ class ExerciseRead(BaseModel):
     muscle: str = Field(min_length=1)
     is_default: bool
     is_active: bool
+    user_id: int | None
     
 class WorkoutSetRead(BaseModel):
     
@@ -61,6 +63,7 @@ class WorkoutDetailedRead(BaseModel):
     id: int = Field(gt=0)
     name: str = Field(min_length=1)
     date: date
+    user_id: int = Field(gt=0)
     sets : list[WorkoutSetDetailedRead]
     
 class UserCreate(BaseModel):
