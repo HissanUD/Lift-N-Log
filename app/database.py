@@ -1,15 +1,8 @@
-import os
-
 import sqlalchemy as sqa
-from dotenv import load_dotenv
+from app.config import DATABASE_URL
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if DATABASE_URL is None:
-    raise RuntimeError("DATABASE_URL env variable not set")
 
 engine = sqa.create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
