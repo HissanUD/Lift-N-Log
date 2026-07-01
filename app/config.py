@@ -1,0 +1,17 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DATABASE_URL_RAW = os.getenv("DATABASE_URL")
+SECRET_KEY_RAW = os.getenv("SECRET_KEY")
+ALGORITHM_RAW = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES_RAW=os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+
+if DATABASE_URL_RAW is None or SECRET_KEY_RAW is None or ALGORITHM_RAW is None or ACCESS_TOKEN_EXPIRE_MINUTES_RAW is None:
+    raise RuntimeError("some env variable not set")
+
+ACCESS_TOKEN_EXPIRE_MINUTES = int(ACCESS_TOKEN_EXPIRE_MINUTES_RAW)
+DATABASE_URL = str(DATABASE_URL_RAW)
+ALGORITHM = str(ALGORITHM_RAW)
+SECRET_KEY = str(SECRET_KEY_RAW)
