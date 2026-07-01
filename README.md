@@ -1,5 +1,7 @@
 # Lift N Log API
 
+![Backend Tests](https://github.com/HissanUD/Lift-N-Log/actions/workflows/tests.yml/badge.svg)
+
 A FastAPI backend for tracking workouts, exercises, and workout sets. The API supports user registration/login, JWT-protected routes, PostgreSQL persistence, Alembic migrations, default exercise seeding, and an isolated PostgreSQL test database.
 
 This project was built as a backend learning project with a focus on production-style foundations: typed request/response schemas, relational data modeling, authentication, database migrations, and automated route tests.
