@@ -1,4 +1,4 @@
-# Gym Workout API
+# Lift N Log API
 
 A FastAPI backend for tracking workouts, exercises, and workout sets. The API supports user registration/login, JWT-protected routes, PostgreSQL persistence, Alembic migrations, default exercise seeding, and an isolated PostgreSQL test database.
 
@@ -104,8 +104,8 @@ DELETE /workouts/{workout_id}/sets/{set_id}
 Clone the repository:
 
 ```bash
-git clone https://github.com/HissanUD/Fast-api-prac.git
-cd Fast-api-prac
+git clone https://github.com/HissanUD/Lift-N-Log.git
+cd Lift-N-Log
 ```
 
 Install dependencies:
