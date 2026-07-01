@@ -10,8 +10,8 @@ from fastapi.testclient import TestClient
 from httpx import Response
 from sqlalchemy.orm import sessionmaker
 
-from app import models
-from app.database import Base, get_db
+from app.db import models
+from app.db.database import Base, get_db
 from app.main import app
 
 load_dotenv()

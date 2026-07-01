@@ -1,5 +1,5 @@
 import sqlalchemy as sqa
-from app.config import DATABASE_URL
+from app.core.config import DATABASE_URL
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 

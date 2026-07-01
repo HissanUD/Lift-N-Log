@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.routers import exercises, workouts, auth
-from app.database import engine, Base
-from app import models
+from app.db.database import engine, Base
+from app.db import models
 
 app = FastAPI()
 
@@ -18,6 +18,5 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
-
 
 

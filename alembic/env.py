@@ -1,4 +1,4 @@
-from app.config import DATABASE_URL
+from app.core.config import DATABASE_URL
 
 from logging.config import fileConfig
 
@@ -7,8 +7,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.database import Base
-from app import models
+from app.db.database import Base
+from app.db import models
 
 
 

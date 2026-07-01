@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from app.config import ACCESS_TOKEN_EXPIRE_MINUTES,SECRET_KEY,ALGORITHM
+from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES,SECRET_KEY,ALGORITHM
 from datetime import datetime, timedelta, timezone
 from jose import jwt
 

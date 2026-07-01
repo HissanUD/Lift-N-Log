@@ -2,8 +2,8 @@ from fastapi import HTTPException, APIRouter, Depends
 from app.schemas import WorkoutCreate,WorkoutSetCreate, WorkoutRead, WorkoutSetRead, WorkoutDetailedRead, WorkoutSetDetailedRead
 import sqlalchemy as sqa
 from sqlalchemy.orm import Session
-from app import models
-from app.database import get_db
+from app.db import models
+from app.db.database import get_db
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/workouts",tags=["workouts"])

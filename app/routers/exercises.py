@@ -1,8 +1,8 @@
 from fastapi import HTTPException, APIRouter, Depends
 from app.schemas import ExerciseCreate, ExerciseRead
 from sqlalchemy.orm import Session
-from app import models
-from app.database import get_db
+from app.db import models
+from app.db.database import get_db
 import sqlalchemy as sqa
 from app.dependencies import get_current_user
 
