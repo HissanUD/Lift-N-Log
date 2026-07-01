@@ -19,6 +19,7 @@ This project was built as a backend learning project with a focus on production-
 - PostgreSQL database persistence
 - Alembic database migrations
 - Isolated test database for pytest
+- GitHub Actions CI with PostgreSQL service container
 - FastAPI Swagger docs
 
 ## Tech Stack
@@ -33,6 +34,7 @@ This project was built as a backend learning project with a focus on production-
 - python-jose
 - pytest
 - uv
+- GitHub Actions
 
 ## Project Structure
 
@@ -196,6 +198,20 @@ Current coverage includes:
 - workout volume calculation
 - invalid request body cases
 
+## Continuous Integration
+
+GitHub Actions runs the backend test suite on every push and pull request.
+
+The CI workflow:
+
+- starts a temporary PostgreSQL service container
+- installs Python and uv
+- installs project dependencies
+- runs Alembic migrations
+- runs the pytest suite
+
+The workflow uses CI-only environment variables and does not depend on local `.env` values.
+
 ## Authentication Flow
 
 1. A user registers with an email, display name, and password.
@@ -219,7 +235,6 @@ The token contains the user's ID in the JWT `sub` claim. Protected routes decode
 
 ## Future Improvements
 
-- GitHub Actions CI with PostgreSQL service container
 - Docker Compose for API + PostgreSQL
 - Refresh tokens and logout/token invalidation
 - Password reset and email verification
