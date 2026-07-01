@@ -1,0 +1,225 @@
+# Gym Workout API
+
+A FastAPI backend for tracking workouts, exercises, and workout sets. The API supports user registration/login, JWT-protected routes, PostgreSQL persistence, Alembic migrations, default exercise seeding, and an isolated PostgreSQL test database.
+
+This project was built as a backend learning project with a focus on production-style foundations: typed request/response schemas, relational data modeling, authentication, database migrations, and automated route tests.
+
+## Features
+
+- User registration and login with hashed passwords
+- JWT bearer authentication for protected routes
+- User-owned workouts and workout sets
+- Default exercises seeded into the database
+- User-created custom exercises
+- Soft delete behavior for custom exercises
+- Protection against accessing another user's workouts or custom exercises
+- Workout volume calculation
+- PostgreSQL database persistence
+- Alembic database migrations
+- Isolated test database for pytest
+- FastAPI Swagger docs
+
+## Tech Stack
+
+- Python 3.14
+- FastAPI
+- SQLAlchemy ORM
+- PostgreSQL
+- Alembic
+- Pydantic
+- passlib + bcrypt
+- python-jose
+- pytest
+- uv
+
+## Project Structure
+
+```text
+app/
+  core/
+    config.py          # environment/config loading
+    security.py        # password hashing and JWT creation
+  db/
+    database.py        # SQLAlchemy engine/session setup
+    models.py          # SQLAlchemy ORM models
+    seed.py            # default exercise seed data
+  routers/
+    auth.py            # register, login, current user
+    exercises.py       # exercise CRUD
+    workouts.py        # workout and set routes
+  dependencies.py      # auth/current-user dependencies
+  main.py              # FastAPI app entrypoint
+  schemas.py           # Pydantic request/response models
+tests/
+  conftest.py
+  test_auth.py
+  test_exercises.py
+  test_workouts.py
+alembic/
+  versions/
+```
+
+## API Overview
+
+Authentication:
+
+```text
+POST /auth/register
+POST /auth/login
+GET  /auth/me
+```
+
+Exercises:
+
+```text
+GET    /exercises/
+GET    /exercises/{exercise_id}
+POST   /exercises/
+PUT    /exercises/{exercise_id}
+DELETE /exercises/{exercise_id}
+```
+
+Workouts:
+
+```text
+GET    /workouts/
+GET    /workouts/{workout_id}
+POST   /workouts/
+PUT    /workouts/{workout_id}
+DELETE /workouts/{workout_id}
+GET    /workouts/{workout_id}/volume
+```
+
+Workout sets:
+
+```text
+POST   /workouts/{workout_id}/sets
+GET    /workouts/{workout_id}/sets
+GET    /workouts/{workout_id}/sets/{set_id}
+DELETE /workouts/{workout_id}/sets/{set_id}
+```
+
+## Local Setup
+
+Clone the repository:
+
+```bash
+git clone https://github.com/HissanUD/Fast-api-prac.git
+cd Fast-api-prac
+```
+
+Install dependencies:
+
+```bash
+uv sync
+```
+
+Create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Update `.env` with your own PostgreSQL credentials:
+
+```env
+DATABASE_URL=postgresql://gym_user:password@localhost:5432/gym_api_db
+TEST_DATABASE_URL=postgresql://gym_user:password@localhost:5432/gym_api_test_db
+SECRET_KEY=replace-me-with-a-long-random-secret
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+If your database password contains special characters, URL-encode it inside the database URLs.
+
+## Database Setup
+
+Create the development and test databases in PostgreSQL:
+
+```bash
+createdb gym_api_db
+createdb gym_api_test_db
+```
+
+Run migrations:
+
+```bash
+uv run alembic upgrade head
+```
+
+Seed the default exercise list:
+
+```bash
+uv run python -m app.seed
+```
+
+## Running the App
+
+Start the development server:
+
+```bash
+uv run fastapi dev app/main.py
+```
+
+Open the API docs:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Health check:
+
+```text
+GET /health
+```
+
+## Running Tests
+
+The test suite uses `TEST_DATABASE_URL`, not the development database.
+
+Run all tests:
+
+```bash
+uv run pytest
+```
+
+Current coverage includes:
+
+- registration and login flows
+- JWT-protected routes
+- current user lookup
+- exercise ownership and default exercise rules
+- workout ownership
+- workout set creation/deletion
+- workout volume calculation
+- invalid request body cases
+
+## Authentication Flow
+
+1. A user registers with an email, display name, and password.
+2. The password is hashed before storage.
+3. The user logs in with email/password.
+4. The API returns a JWT bearer token.
+5. Protected routes require:
+
+```text
+Authorization: Bearer <token>
+```
+
+The token contains the user's ID in the JWT `sub` claim. Protected routes decode the token, load the user from the database, and use that user for ownership checks.
+
+## Notes
+
+- `.env` is intentionally ignored and should never be committed.
+- `.env.example` contains only placeholder values.
+- The project currently uses first-party username/password authentication for learning purposes.
+- The API is backend-only; no frontend is included yet.
+
+## Future Improvements
+
+- GitHub Actions CI with PostgreSQL service container
+- Docker Compose for API + PostgreSQL
+- Refresh tokens and logout/token invalidation
+- Password reset and email verification
+- More detailed progress/statistics endpoints
+- Frontend client
