@@ -1,0 +1,40 @@
+# Git
+.git/
+.github/
+
+# Local environment
+.venv/
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Test/cache output
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.pyright/
+
+# Build output
+build/
+dist/
+*.egg-info/
+
+# Local databases/logs
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
