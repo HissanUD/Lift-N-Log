@@ -4,7 +4,7 @@
 
 A FastAPI backend for tracking workouts, exercises, and workout sets. The API supports user registration/login, JWT-protected routes, PostgreSQL persistence, Alembic migrations, default exercise seeding, and an isolated PostgreSQL test database.
 
-This project was built as a backend learning project with a focus on production-style foundations: typed request/response schemas, relational data modeling, authentication, database migrations, and automated route tests.
+This project was built as a backend learning project with a focus on production-style foundations: typed request/response schemas, relational data modeling, authentication, database migrations, service-layer business logic, and automated tests.
 
 ## Features
 
@@ -19,6 +19,7 @@ This project was built as a backend learning project with a focus on production-
 - PostgreSQL database persistence
 - Alembic database migrations
 - Isolated test database for pytest
+- Route and service-layer test coverage
 - GitHub Actions CI with PostgreSQL service container
 - Docker Compose setup for local API + PostgreSQL
 - FastAPI Swagger docs
@@ -50,16 +51,22 @@ app/
     models.py          # SQLAlchemy ORM models
     seed.py            # default exercise seed data
   routers/
-    auth.py            # register, login, current user
-    exercises.py       # exercise CRUD
-    workouts.py        # workout and set routes
+    auth.py            # auth HTTP routes
+    exercises.py       # exercise HTTP routes
+    workouts.py        # workout and set HTTP routes
+  services/
+    auth_service.py     # registration/login business logic
+    exercise_service.py # exercise business logic
+    workout_service.py  # workout and set business logic
   dependencies.py      # auth/current-user dependencies
+  errors.py            # service-layer exceptions
   main.py              # FastAPI app entrypoint
   schemas.py           # Pydantic request/response models
 tests/
   conftest.py
   test_auth.py
   test_exercises.py
+  test_services.py
   test_workouts.py
 alembic/
   versions/
@@ -241,12 +248,19 @@ The test suite uses `TEST_DATABASE_URL`, not the development database.
 Run all tests:
 
 ```bash
-uv run pytest
+uv run python -m pytest
+```
+
+Run tests with coverage:
+
+```bash
+uv run python -m pytest --cov=app --cov-report=term-missing
 ```
 
 Current coverage includes:
 
 - registration and login flows
+- auth, exercise, and workout service behavior
 - JWT-protected routes
 - current user lookup
 - exercise ownership and default exercise rules
