@@ -20,6 +20,7 @@ This project was built as a backend learning project with a focus on production-
 - Alembic database migrations
 - Isolated test database for pytest
 - GitHub Actions CI with PostgreSQL service container
+- Docker Compose setup for local API + PostgreSQL
 - FastAPI Swagger docs
 
 ## Tech Stack
@@ -35,6 +36,7 @@ This project was built as a backend learning project with a focus on production-
 - pytest
 - uv
 - GitHub Actions
+- Docker
 
 ## Project Structure
 
@@ -177,6 +179,61 @@ Health check:
 GET /health
 ```
 
+## Running With Docker
+
+The project includes a Dockerfile and Docker Compose setup for running the API with a PostgreSQL container.
+
+Start the API and database:
+
+```bash
+docker compose up --build
+```
+
+This will:
+
+- build the FastAPI image
+- start a PostgreSQL 16 container
+- wait for PostgreSQL to become healthy
+- run Alembic migrations
+- seed the default exercise list
+- start Uvicorn on port 8000
+
+API docs:
+
+```text
+http://localhost:8000/docs
+```
+
+Health check:
+
+```text
+http://localhost:8000/health
+```
+
+Docker PostgreSQL connection for DBeaver or another database client:
+
+```text
+Host: localhost
+Port: 5433
+Database: gym_api_db
+Username: gym_user
+Password: password
+```
+
+Stop the containers:
+
+```bash
+docker compose down
+```
+
+Stop the containers and delete the Docker database volume:
+
+```bash
+docker compose down -v
+```
+
+Use `down -v` only when you want to wipe the Docker PostgreSQL data.
+
 ## Running Tests
 
 The test suite uses `TEST_DATABASE_URL`, not the development database.
@@ -235,7 +292,6 @@ The token contains the user's ID in the JWT `sub` claim. Protected routes decode
 
 ## Future Improvements
 
-- Docker Compose for API + PostgreSQL
 - Refresh tokens and logout/token invalidation
 - Password reset and email verification
 - More detailed progress/statistics endpoints
