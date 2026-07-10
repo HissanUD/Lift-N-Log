@@ -11,7 +11,12 @@ RUN uv sync --frozen
 COPY app/ ./app
 COPY alembic.ini ./
 COPY alembic/ ./alembic
-EXPOSE 8000
 
-# Running the app
-CMD ["uv","run","uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Copy the start script into the container
+COPY start.sh ./
+# Give the container permission to execute the script
+RUN chmod +x ./start.sh
+
+# Render manages ports automatically via $PORT, so EXPOSE is optional,
+# but we run the script to kick off the multi-command sequence
+CMD ["./start.sh"]
